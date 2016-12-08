@@ -1,0 +1,163 @@
+---
+title: "Tags Pairs: Exploring R Questions' Tags on Stackoverflow"
+date: "October 24, 2016"
+output: 
+  html_document: 
+    keep_md: yes
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE,message = FALSE,comment = " ")
+```
+
+# Overview
+
+This script looks into **Stackoverflow's R-Questions** tags and explores relations. Questions are tagged with at least one tag, but the majority have more than one. For these questions, I will look into the occurance of pairs (e.g. ggplot2-histogram, or shiny-javascript,..etc.) and see the most frequent pairs. 
+
+At the end, we will be able to make statements such as:
+
+- **"shiny" appeared in x questions with "ggplot2"**  
+
+- **"legend" is the 2nd most frequently mentioned tags with "ggplot2"**
+
+- ...etc.
+
+This could help identify the most frequently mentioned pairs of tags.
+
+# Data Analysis
+
+## Loading Libraries and Reading Data
+```{r load library and read data}
+# load libraries
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(DT)
+
+#read tags data
+dat <- read.csv("../rquestions/Tags.csv",stringsAsFactors = FALSE)
+```
+
+## Exploring Dataset
+```{r frequency of tags}
+# count the frequency of each tag
+datx <- dat %>%
+        group_by(Tag) %>%
+        summarise(N=n()) %>%
+        arrange(desc(N))
+```
+We can see the frequency of each tag as follows:
+
+```{r, echo=F}
+datatable(datx)
+```
+
+## Tags Pairs
+
+Here we will select the questions with **more than one tag** (in addition to R) and do the following:
+
+- Step1: get all the tags corresponding to question ID
+- Step2: find all  pair combinations from these tags
+- Step3: combine all the pairs in one dataframe
+
+
+### Step1 : get all the tags corresponding to question ID
+```{r nest by Q_id}
+
+# group by question ID and nest (for questions with more than one tag (+R))
+datn <- dat %>% 
+        group_by(Id) %>% 
+        filter(n()>1) %>% 
+        nest(.key="Tags")
+```
+
+Now if we lookk at a certain question ID, we find all the tags in one list:
+```{r echo=F}
+datn[1,]
+
+```
+and we can get them :
+```{r}
+datn$Tags[1]
+```
+
+### Step2: find all  pair combinations from these tags
+
+Now, we will get all the possible pairs from the questions' tags:
+
+```{r get tags pairs}
+#function to get all the combinations from a list
+GetPairs <- function(x) {
+        combn(x[[1]],2) %>% 
+                t %>% 
+                as.data.frame(row.names=NULL,stringsAsFactors=FALSE) 
+}
+
+datn <- datn %>% 
+        mutate(pairs=map(Tags,GetPairs))
+```
+
+For the same row we checked in the previous step, we can see that the pairs are as follows:
+
+```{r}
+datn$pairs[1]
+```
+
+### Step3: combine all the pairs in one dataframe
+
+Now we will combine all the pairs for all questions, in one dataframe
+
+```{r all pairs in one df}
+dat_pairs <- plyr::rbind.fill(datn$pairs)
+
+# put pairs in the same order
+dat_pairs <- dat_pairs %>% 
+        mutate(firstV=map2_chr(V1,V2,function(x,y) sort(c(x,y))[1]),
+               secondV=map2_chr(V1,V2,function(x,y) sort(c(x,y))[2])
+        ) %>% 
+        select(-V1,-V2)
+
+# count the frequency of each pair
+pair_freq <- dat_pairs %>% 
+        group_by(firstV,secondV) %>% 
+        summarise(pair_count=n()) %>% 
+        arrange(desc(pair_count))
+```
+
+Now we have the frequency of each pair as follows:
+
+```{r}
+datatable(pair_freq)
+```
+
+## Tag-Pairs for a Certain Tag
+
+Here we can pick one tag and see all the other tags that appear with it and the frequency of each.
+
+```{r GetTagPairs function}
+# Get all pairs with a certain tag
+GetTagPairs <- function(tag) {
+     
+        tagx <- pair_freq %>% 
+                filter(firstV==tag|secondV==tag) %>% 
+                arrange(desc(pair_count))   
+        
+        tagx[tagx$secondV == tag, 
+             c("firstV", "secondV")] <- tagx[tagx$secondV == tag, 
+                                             c("secondV", "firstV")] 
+        
+        return(tagx)
+}
+
+```
+
+### Example: ggplot2 Pairs
+
+```{r}
+ex <- GetTagPairs("ggplot2")
+
+datatable(ex)
+```
+
+

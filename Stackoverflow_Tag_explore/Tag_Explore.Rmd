@@ -159,7 +159,7 @@ datatable(ex)
 ```
 
 ```{r}
-datx1 <- datx %>% 
+datx <- datx %>% 
         mutate(pairs = map(Tag, ~GetTagPairs(pair_freq,.x)))
 ```
 

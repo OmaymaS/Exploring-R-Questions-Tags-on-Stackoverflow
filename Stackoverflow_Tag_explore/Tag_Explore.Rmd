@@ -2,9 +2,9 @@
 title: "Tags Pairs: Exploring R Questions' Tags on Stackoverflow"
 date: "October 24, 2016"
 output: 
-  html_document: 
-    keep_md: yes
-    toc: yes
+html_document: 
+keep_md: yes
+toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -92,8 +92,8 @@ Now, we will get all the possible pairs from the questions' tags:
 
 datn <- datn %>% 
         mutate(pairs=map(Tags, ~combn(.x[["Tag"]], 2) %>% 
-                                        t %>% 
-                                        as.data.frame(stringsAsFactors = F)))
+                                 t %>% 
+                                 as.data.frame(stringsAsFactors = F)))
 ```
 
 For the same row we checked in the previous step, we can see that the pairs are as follows:
@@ -122,7 +122,8 @@ dat_pairs <- dat_pairs %>%
 pair_freq <- dat_pairs %>% 
         group_by(firstV,secondV) %>% 
         summarise(pair_count=n()) %>% 
-        arrange(desc(pair_count))
+        arrange(desc(pair_count)) %>% 
+        ungroup()
 ```
 
 Now we have the frequency of each pair as follows:
@@ -137,17 +138,14 @@ Here we can pick one tag and see all the other tags that appear with it and the 
 
 ```{r GetTagPairs function}
 # Get all pairs with a certain tag
-GetTagPairs <- function(tag) {
-     
-        tagx <- pair_freq %>% 
+GetTagPairs <- function(df, tag) {
+        
+         df %>% 
                 filter(firstV==tag|secondV==tag) %>% 
-                arrange(desc(pair_count))   
-        
-        tagx[tagx$secondV == tag, 
-             c("firstV", "secondV")] <- tagx[tagx$secondV == tag, 
-                                             c("secondV", "firstV")] 
-        
-        return(tagx)
+                arrange(desc(pair_count)) %>% 
+                mutate(T1 = ifelse(secondV==tag, secondV, firstV),
+                       T2 = ifelse(secondV==tag, firstV, secondV)) %>% 
+                select(T1, T2, pair_count)
 }
 
 ```
@@ -155,9 +153,13 @@ GetTagPairs <- function(tag) {
 ### Example: ggplot2 Pairs
 
 ```{r}
-ex <- GetTagPairs("ggplot2")
+ex <- GetTagPairs(pair_freq, "ggplot2")
 
 datatable(ex)
 ```
 
+```{r}
+datx1 <- datx %>% 
+        mutate(pairs = map(Tag, ~GetTagPairs(pair_freq,.x)))
+```
 

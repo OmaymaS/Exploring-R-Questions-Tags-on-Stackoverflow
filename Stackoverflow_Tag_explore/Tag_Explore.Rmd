@@ -140,12 +140,11 @@ Here we can pick one tag and see all the other tags that appear with it and the 
 # Get all pairs with a certain tag
 GetTagPairs <- function(df, tag) {
         
-         df %>% 
+        df %>% 
                 filter(firstV==tag|secondV==tag) %>% 
                 arrange(desc(pair_count)) %>% 
-                mutate(T1 = ifelse(secondV==tag, secondV, firstV),
-                       T2 = ifelse(secondV==tag, firstV, secondV)) %>% 
-                select(T1, T2, pair_count)
+                mutate(T2 = ifelse(secondV==tag, firstV, secondV)) %>% 
+                select(T2, pair_count)
 }
 
 ```

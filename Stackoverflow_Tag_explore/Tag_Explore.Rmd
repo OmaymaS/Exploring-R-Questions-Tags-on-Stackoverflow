@@ -99,7 +99,9 @@ datn <- datn %>%
 For the same row we checked in the previous step, we can see that the pairs are as follows:
 
 ```{r}
-datn$pairs[1]
+datn %>% 
+        filter(Id==79709) %>% 
+        .[["pairs"]]
 ```
 
 ### Step3: combine all the pairs in one dataframe

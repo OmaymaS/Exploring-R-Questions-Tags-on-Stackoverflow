@@ -77,9 +77,10 @@ datn %>%
         .[["Tags"]]
 
 ```
-and we can get them :
+
 ```{r}
-datn$Tags[1]
+# and we can get them :
+# datn$Tags[1]
 ```
 
 ### Step2: find all  pair combinations from these tags
@@ -87,15 +88,12 @@ datn$Tags[1]
 Now, we will get all the possible pairs from the questions' tags:
 
 ```{r get tags pairs}
-#function to get all the combinations from a list
-GetPairs <- function(x) {
-        combn(x[[1]],2) %>% 
-                t %>% 
-                as.data.frame(row.names=NULL,stringsAsFactors=FALSE) 
-}
+# map to function to get all the combinations from a list
 
 datn <- datn %>% 
-        mutate(pairs=map(Tags,GetPairs))
+        mutate(pairs=map(Tags, ~combn(.x[["Tag"]], 2) %>% 
+                                        t %>% 
+                                        as.data.frame(stringsAsFactors = F)))
 ```
 
 For the same row we checked in the previous step, we can see that the pairs are as follows:

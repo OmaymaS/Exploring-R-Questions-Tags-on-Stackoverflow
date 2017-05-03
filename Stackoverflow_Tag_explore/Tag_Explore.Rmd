@@ -72,7 +72,9 @@ datn <- dat %>%
 
 Now if we lookk at a certain question ID, we find all the tags in one list:
 ```{r echo=F}
-datn[1,]
+datn %>% 
+        filter(Id==79709) %>% 
+        .[["Tags"]]
 
 ```
 and we can get them :

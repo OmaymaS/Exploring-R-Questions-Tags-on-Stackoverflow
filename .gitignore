@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+data/Answers.csv
+data/Questions.csv
+Stackoverflow_Tags_Script.R

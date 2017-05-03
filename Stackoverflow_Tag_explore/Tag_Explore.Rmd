@@ -30,9 +30,7 @@ This could help identify the most frequently mentioned pairs of tags.
 ## Loading Libraries and Reading Data
 ```{r load library and read data}
 # load libraries
-library(dplyr)
-library(purrr)
-library(tidyr)
+library(tidyverse)
 library(DT)
 
 #read tags data

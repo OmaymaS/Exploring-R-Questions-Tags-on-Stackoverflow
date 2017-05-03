@@ -34,7 +34,7 @@ library(tidyverse)
 library(DT)
 
 #read tags data
-dat <- read.csv("../rquestions/Tags.csv",stringsAsFactors = FALSE)
+dat <- read.csv("../data/Tags.csv",stringsAsFactors = FALSE)
 ```
 
 ## Exploring Dataset

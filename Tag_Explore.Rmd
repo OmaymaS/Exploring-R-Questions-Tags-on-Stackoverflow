@@ -157,7 +157,9 @@ ex <- GetTagPairs(pair_freq, "ggplot2")
 datatable(ex)
 ```
 
+
 ```{r}
+# add all the nested pairs
 datx <- datx %>% 
         mutate(pairs = map(Tag, ~GetTagPairs(pair_freq,.x)))
 ```

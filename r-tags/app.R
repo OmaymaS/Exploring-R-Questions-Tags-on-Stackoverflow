@@ -5,23 +5,28 @@ library(plotly)
 library(shinythemes)
 library(DT)
 
-# load data
+# load data ----------------------------
 tags <- read_rds("tags.rds")
 
-# Define UI for application that draws a histogram
+# Define UI ----------------------------
 ui <- fluidPage(theme = shinytheme("yeti"),
                 
                 # Application title
                 titlePanel("R Questions Tag Pairs on Stackoverflow"),
                 
-                # Sidebar with a slider input for number of bins 
+                # Sidebar ----------------------------------
                 sidebarLayout(
                   sidebarPanel(
+                    ## list of tags --------------------------------
                     selectInput("tags","Main Tag",
                                 sort(tags$Tag),
                                 selectize = T,
                                 selected = "ggplot2"),
+                    
+                    ## slider input for the number of top tags to plot ------------------------
                     uiOutput("range"),
+                    
+                    ## help text about the dataset------------------
                     helpText(HTML("<p><a href='https://www.kaggle.com/stackoverflow/rquestions'>Data Source</a><br> Dataset released by Stackoverflow on Kaggle, including questions about R posted till 19 October 2016.<br>
 License: <a href = 'https://creativecommons.org/licenses/by-sa/3.0/' >CC-BY-SA 3.0</a>
                                   </p>"))
@@ -33,8 +38,10 @@ License: <a href = 'https://creativecommons.org/licenses/by-sa/3.0/' >CC-BY-SA 3
                     fluidRow(
                       column(width = 12,
                              tabsetPanel(
+                               ## bar plot of top tags 
                                tabPanel("Most Frequent Tag-Pairs",
                                         uiOutput("pairs_bar_sized")),
+                               ## datatable 
                                tabPanel("Tag-Pairs Table",
                                         dataTableOutput("tag_dt", height = "500px")))
                       )
@@ -90,8 +97,7 @@ server <- function(input, output) {
                height = 100+20*input$top)
   })
   
-  
-  ## data table  --------------
+  ## data table of tag pairs --------------
   output$tag_dt <- renderDataTable({
     DT::datatable(tag_data())
   })

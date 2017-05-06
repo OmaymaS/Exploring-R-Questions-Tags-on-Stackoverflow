@@ -22,7 +22,9 @@ ui <- fluidPage(theme = shinytheme("yeti"),
                                 selectize = T,
                                 selected = "ggplot2"),
                     uiOutput("range"),
-                    helpText(HTML("<p><a href='https://www.kaggle.com/stackoverflow/rquestions'>Data Source</a><br> Dataset released by Stackoverflow on Kaggle, including questions about R posted till 19 October 2016.</p>"))
+                    helpText(HTML("<p><a href='https://www.kaggle.com/stackoverflow/rquestions'>Data Source</a><br> Dataset released by Stackoverflow on Kaggle, including questions about R posted till 19 October 2016.<br>
+License: <a href = 'https://creativecommons.org/licenses/by-sa/3.0/' >CC-BY-SA 3.0</a>
+                                  </p>"))
                     
                   ),
                   
@@ -48,8 +50,7 @@ server <- function(input, output) {
   tag_data <- reactive({
     tags %>% 
       filter(Tag == input$tags) %>% 
-      unnest %>% 
-      select(-N)
+      unnest
   })
   
   ## slider to select number of tags to plot --------------
@@ -77,7 +78,7 @@ server <- function(input, output) {
       theme_classic()+
       theme(text = element_text(size = 16))+
       xlab("Tag")+
-      ylab("Count")+
+      ylab("Number of Questions")+
       ggtitle(paste0("Top ",input$top, " tags with ", input$tags))+
       guides(fill = F)
   })

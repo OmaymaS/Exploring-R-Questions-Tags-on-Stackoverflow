@@ -1,12 +1,3 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
 library(tidyverse)
 library(ggplot2)
@@ -14,49 +5,44 @@ library(plotly)
 library(shinythemes)
 library(DT)
 
+# load data
 tags <- read_rds("tags.rds")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(theme = shinytheme("yeti"),
-  
-  # Application title
-  titlePanel("R Tags"),
-  
-  # Sidebar with a slider input for number of bins 
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("tags","Main Tag",
-                  sort(tags$Tag),
-                  selectize = T,
-                  selected = "ggplot2"),
-      uiOutput("range")
-
-    ),
-    
-    # Show a plot of the generated distribution
-    mainPanel(
-
-      # dataTableOutput("tag_dt", height = "500px")
-      fluidRow(
-      column(width = 12,
-               tabsetPanel(
-                 tabPanel("Most Frequent Tag-Pairs",
-                          uiOutput("pairs_bar_sized")),
-                 tabPanel("Tag-Pairs Table",
-                          dataTableOutput("tag_dt", height = "500px"))
-               )
-               )
-               
-               
-      )
-      
-    )
-  )
+                
+                # Application title
+                titlePanel("R Questions Tag Pairs on Stackoverflow"),
+                
+                # Sidebar with a slider input for number of bins 
+                sidebarLayout(
+                  sidebarPanel(
+                    selectInput("tags","Main Tag",
+                                sort(tags$Tag),
+                                selectize = T,
+                                selected = "ggplot2"),
+                    uiOutput("range"),
+                    helpText(HTML("<p><a href='https://www.kaggle.com/stackoverflow/rquestions'>Data Source</a><br> Dataset released by Stackoverflow on Kaggle, including questions about R posted till 19 October 2016.</p>"))
+                    
+                  ),
+                  
+                  # Show a plot of the generated distribution
+                  mainPanel(
+                    fluidRow(
+                      column(width = 12,
+                             tabsetPanel(
+                               tabPanel("Most Frequent Tag-Pairs",
+                                        uiOutput("pairs_bar_sized")),
+                               tabPanel("Tag-Pairs Table",
+                                        dataTableOutput("tag_dt", height = "500px")))
+                      )
+                    )
+                  )
+                )
 )
 
 # Define server logic 
 server <- function(input, output) {
-  
   
   ## filter data based on inputs -------------------------
   tag_data <- reactive({
@@ -66,10 +52,10 @@ server <- function(input, output) {
       select(-N)
   })
   
-  
+  ## slider to select number of tags to plot --------------
   output$range <- renderUI({
     req(tag_data())
-    sliderInput("top", paste0("Number of Top Tags with ", input$tags),
+    sliderInput("top", paste0("Number of Top Tags to Plot with ", input$tags),
                 min = 1,
                 max = nrow(tag_data()),
                 value = ifelse(nrow(tag_data())>=10, 10, nrow(tag_data())),
@@ -96,6 +82,7 @@ server <- function(input, output) {
       guides(fill = F)
   })
   
+  ## renderUI to set variable plot height --------------
   output$pairs_bar_sized <- renderUI({
     req(input$top)
     plotOutput("pairs_bar",

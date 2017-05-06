@@ -12,6 +12,7 @@ library(tidyverse)
 library(ggplot2)
 library(plotly)
 library(shinythemes)
+library(DT)
 
 tags <- read_rds("tags.rds")
 
@@ -24,7 +25,7 @@ ui <- fluidPage(theme = shinytheme("yeti"),
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
-      selectInput("tags","R Tags",
+      selectInput("tags","Main Tag",
                   sort(tags$Tag),
                   selectize = T,
                   selected = "ggplot2"),
@@ -34,14 +35,19 @@ ui <- fluidPage(theme = shinytheme("yeti"),
     
     # Show a plot of the generated distribution
     mainPanel(
-      
+
+      # dataTableOutput("tag_dt", height = "500px")
       fluidRow(
-        column(width = 12,
+      column(width = 12,
                tabsetPanel(
-                 tabPanel("Most Frequent Tags",
+                 tabPanel("Most Frequent Tag-Pairs",
                           uiOutput("pairs_bar_sized")),
-                 tabPanel("Tags Table")
-               ))
+                 tabPanel("Tag-Pairs Table",
+                          dataTableOutput("tag_dt", height = "500px"))
+               )
+               )
+               
+               
       )
       
     )
@@ -56,16 +62,17 @@ server <- function(input, output) {
   tag_data <- reactive({
     tags %>% 
       filter(Tag == input$tags) %>% 
-      unnest 
+      unnest %>% 
+      select(-N)
   })
   
   
   output$range <- renderUI({
     req(tag_data())
-    sliderInput("top", "Most",
+    sliderInput("top", paste0("Number of Top Tags with ", input$tags),
                 min = 1,
                 max = nrow(tag_data()),
-                value = 10,
+                value = ifelse(nrow(tag_data())>=10, 10, nrow(tag_data())),
                 step = 1)
   })
   
@@ -85,7 +92,7 @@ server <- function(input, output) {
       theme(text = element_text(size = 16))+
       xlab("Tag")+
       ylab("Count")+
-      ggtitle(paste0("Top",input$top, " tags with ", input$tags))+
+      ggtitle(paste0("Top ",input$top, " tags with ", input$tags))+
       guides(fill = F)
   })
   
@@ -96,7 +103,10 @@ server <- function(input, output) {
   })
   
   
-  
+  ## data table  --------------
+  output$tag_dt <- renderDataTable({
+    DT::datatable(tag_data())
+  })
 }
 
 # Run the application 
